@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import type { PageObjectResponse, BlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import type { Issue } from './types';
 import fs from 'fs';
 import fetch from 'node-fetch';
@@ -24,6 +24,12 @@ async function downloadImage(url: string, filepath: string): Promise<void> {
     response.body.on('end', resolve);
     dest.on('error', reject);
   });
+}
+
+function isFullPage(
+  page: PageObjectResponse | Partial<PageObjectResponse>
+): page is PageObjectResponse {
+  return 'properties' in page;
 }
 
 export async function getIssues(): Promise<Issue[]> {
@@ -54,6 +60,10 @@ export async function getIssues(): Promise<Issue[]> {
   });
 
   const issues = await Promise.all(response.results.map(async (issue) => {
+    if (!isFullPage(issue)) {
+      throw new Error('Incomplete page data');
+    }
+
     const properties = issue.properties as NotionPageProperties;
     const coverUrl = properties.cover?.files[0]?.file?.url;
     const coverName = properties.cover?.files[0]?.name;
@@ -75,9 +85,14 @@ export async function getIssues(): Promise<Issue[]> {
   return issues as Issue[];
 }
 
-export async function getIssue(pageId: string): Promise<{ page: Issue; blocks: any[] }> {
+export async function getIssue(pageId: string): Promise<{ page: Issue; blocks: BlockObjectResponse[] }> {
   const page = await notion.pages.retrieve({ page_id: pageId }) as PageObjectResponse;
   const blocks = await notion.blocks.children.list({ block_id: pageId });
+
+  if (!isFullPage(page)) {
+    throw new Error('Incomplete page data');
+  }
+
   const properties = page.properties as NotionPageProperties;
   const coverUrl = properties.cover?.files[0]?.file?.url;
   const coverName = properties.cover?.files[0]?.name;
@@ -97,6 +112,6 @@ export async function getIssue(pageId: string): Promise<{ page: Issue; blocks: a
 
   return {
     page: issue,
-    blocks: blocks.results,
+    blocks: blocks.results as BlockObjectResponse[],
   };
 }

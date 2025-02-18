@@ -3,9 +3,9 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   integrations: [tailwind()],
-   
-    contentLayer: true,
-  
+  experimental: {
+    contentLayer: true
+  },
   site: 'https://your-domain.com',
   server: {
     port: 4321,

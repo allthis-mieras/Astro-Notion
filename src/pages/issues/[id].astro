@@ -1,5 +1,4 @@
 ---
-// filepath: /Users/maartenmieras/Dropbox/Work/Github/Astro Notion/src/pages/issues/[id].astro
 import Layout from "../../layouts/Layout.astro";
 import { getIssue, getIssues } from "../../lib/notion";
 import type { Issue } from "../../lib/types";
@@ -43,7 +42,7 @@ const { page, blocks } = await getIssue(id);
         }
       </div>
     </div>
-    {
+    <!-- {
       page.raw.properties["Related Items"] && (
         <section class="mt-12">
           <h2 class="text-2xl font-semibold mb-4">Related Items</h2>
@@ -66,7 +65,7 @@ const { page, blocks } = await getIssue(id);
           </div>
         </section>
       )
-    }
+    } -->
   </article>
   <details>
     <summary>Debug</summary>
