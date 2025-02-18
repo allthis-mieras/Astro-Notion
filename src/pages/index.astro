@@ -10,7 +10,7 @@ const issues: Issue[] = await getIssues();
 <Layout title="All This & That">
   <h1 class="text-4xl font-bold mb-8">Issues</h1>
 
-  <div class="grid articles">
+  <div class="grid articles sm:grid-cols-2 md:grid-cols-4">
     {issues.map((issue) => <ArticleCard issue={issue} />)}
   </div>
 </Layout>
