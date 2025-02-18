@@ -1,0 +1,84 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getIssue, getIssues } from "../../lib/notion";
+
+export async function getStaticPaths() {
+  const issues = await getIssues();
+  return issues.map((issue) => ({
+    params: { id: issue.id },
+  }));
+}
+
+const { id } = Astro.params;
+const { page, blocks } = await getIssue(id);
+
+const issue = {
+  id: page.id,
+  coverUrl: page.properties.cover?.files[0]?.file?.url,
+  title: page.properties.title.title[0].plain_text,
+  date: new Date(page.properties.date.date.start).toLocaleDateString(),
+  uniqueId: page.properties.id.unique_id.number,
+  description: page.properties.description?.rich_text?.[0]?.plain_text,
+  raw: page,
+};
+---
+
+<Layout
+  title={`${issue.title} | Personal Blog`}
+  description={issue.description}
+>
+  <article class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+    {
+      issue.coverUrl && (
+        <img src={issue.coverUrl} alt={issue.title} class="mb-4 rounded-lg" />
+      )
+    }
+    <p class="text-sm text-gray-500">{issue.date}</p>
+    <h1 class="text-4xl font-bold mb-4">{issue.title}</h1>
+    <p class="text-gray-600 dark:text-gray-300 mb-8">{issue.description}</p>
+
+    <div class="prose dark:prose-invert">
+      {
+        blocks.map((block: any) => {
+          if (block.type === "paragraph") {
+            return (
+              <p class="mb-4">
+                {block.paragraph.rich_text
+                  .map((text: any) => text.plain_text)
+                  .join("")}
+              </p>
+            );
+          }
+          return null;
+        })
+      }
+    </div>
+
+    {
+      page.properties["Related Items"] && (
+        <section class="mt-12">
+          <h2 class="text-2xl font-semibold mb-4">Related Items</h2>
+          <div class="grid gap-4">
+            {page.properties["Related Items"].relation.map((relation: any) => (
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded">
+                <h3 class="font-medium">{relation.title}</h3>
+                <a
+                  href={relation.url}
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Learn more →
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </article>
+  <details>
+    <summary>Debug</summary>
+    <pre class="text-xs">{JSON.stringify(issue.raw, null, 2)}</pre>
+  </details>
+</Layout>
