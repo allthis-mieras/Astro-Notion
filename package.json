@@ -16,7 +16,9 @@
     "@fontsource/protest-revolution": "^5.1.1",
     "@notionhq/client": "^2.2.14",
     "astro": "^4.14.0",
+    "marked": "^15.0.7",
     "notion-astro-loader": "^0.1.0",
+    "notion-to-md": "^3.1.5",
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {

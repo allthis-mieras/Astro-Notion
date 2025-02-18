@@ -4,6 +4,14 @@ import type { Issue } from './types';
 import fs from 'fs';
 import fetch from 'node-fetch';
 
+interface NotionPageProperties {
+  cover?: { files: { file: { url: string }; name: string }[] };
+  title: { title: { plain_text: string }[] };
+  date: { date: { start: string } };
+  id: { unique_id: { number: number } };
+  description?: { rich_text: { plain_text: string }[] };
+}
+
 const notion = new Client({
   auth: import.meta.env.NOTION_TOKEN,
 });
@@ -46,8 +54,9 @@ export async function getIssues(): Promise<Issue[]> {
   });
 
   const issues = await Promise.all(response.results.map(async (issue) => {
-    const coverUrl = issue.properties.cover?.files[0]?.file?.url;
-    const coverName = issue.properties.cover?.files[0]?.name;
+    const properties = issue.properties as NotionPageProperties;
+    const coverUrl = properties.cover?.files[0]?.file?.url;
+    const coverName = properties.cover?.files[0]?.name;
     if (coverUrl && coverName) {
       await downloadImage(coverUrl, `./public/images/${coverName}`);
     }
@@ -55,10 +64,10 @@ export async function getIssues(): Promise<Issue[]> {
     return {
       id: issue.id,
       coverUrl: coverName ? `/images/${coverName}` : undefined,
-      title: issue.properties.title.title[0].plain_text,
-      date: new Date(issue.properties.date.date.start).toLocaleDateString(),
-      uniqueId: issue.properties.id.unique_id.number,
-      description: issue.properties.description?.rich_text?.[0]?.plain_text,
+      title: properties.title.title[0].plain_text,
+      date: new Date(properties.date.date.start).toLocaleDateString(),
+      uniqueId: properties.id.unique_id.number,
+      description: properties.description?.rich_text?.[0]?.plain_text,
       raw: issue,
     };
   }));
@@ -69,9 +78,9 @@ export async function getIssues(): Promise<Issue[]> {
 export async function getIssue(pageId: string): Promise<{ page: Issue; blocks: any[] }> {
   const page = await notion.pages.retrieve({ page_id: pageId }) as PageObjectResponse;
   const blocks = await notion.blocks.children.list({ block_id: pageId });
-
-  const coverUrl = page.properties.cover?.files[0]?.file?.url;
-  const coverName = page.properties.cover?.files[0]?.name;
+  const properties = page.properties as NotionPageProperties;
+  const coverUrl = properties.cover?.files[0]?.file?.url;
+  const coverName = properties.cover?.files[0]?.name;
   if (coverUrl && coverName) {
     await downloadImage(coverUrl, `./public/images/${coverName}`);
   }
@@ -79,10 +88,10 @@ export async function getIssue(pageId: string): Promise<{ page: Issue; blocks: a
   const issue: Issue = {
     id: page.id,
     coverUrl: coverName ? `/images/${coverName}` : undefined,
-    title: page.properties.title.title[0].plain_text,
-    date: new Date(page.properties.date.date.start).toLocaleDateString(),
-    uniqueId: page.properties.id.unique_id.number,
-    description: page.properties.description?.rich_text?.[0]?.plain_text,
+    title: properties.title.title[0].plain_text,
+    date: new Date(properties.date.date.start).toLocaleDateString(),
+    uniqueId: properties.id.unique_id.number,
+    description: properties.description?.rich_text?.[0]?.plain_text,
     raw: page,
   };
 
