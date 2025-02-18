@@ -1,11 +1,12 @@
 import { Client } from '@notionhq/client';
 import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import type { Issue } from './types';
 
 const notion = new Client({
   auth: import.meta.env.NOTION_TOKEN,
 });
 
-export async function getIssues() {
+export async function getIssues(): Promise<Issue[]> {
   const response = await notion.databases.query({
     database_id: import.meta.env.NOTION_DATABASE_ID,
     filter: {
@@ -32,15 +33,33 @@ export async function getIssues() {
     ],
   });
 
-  return response.results as PageObjectResponse[];
+  return response.results.map((issue) => ({
+    id: issue.id,
+    coverUrl: issue.properties.cover?.files[0]?.file?.url,
+    title: issue.properties.title.title[0].plain_text,
+    date: new Date(issue.properties.date.date.start).toLocaleDateString(),
+    uniqueId: issue.properties.id.unique_id.number,
+    description: issue.properties.description?.rich_text?.[0]?.plain_text,
+    raw: issue,
+  })) as Issue[];
 }
 
-export async function getIssue(pageId: string) {
-  const page = await notion.pages.retrieve({ page_id: pageId });
+export async function getIssue(pageId: string): Promise<{ page: Issue; blocks: any[] }> {
+  const page = await notion.pages.retrieve({ page_id: pageId }) as PageObjectResponse;
   const blocks = await notion.blocks.children.list({ block_id: pageId });
   
+  const issue: Issue = {
+    id: page.id,
+    coverUrl: page.properties.cover?.files[0]?.file?.url,
+    title: page.properties.title.title[0].plain_text,
+    date: new Date(page.properties.date.date.start).toLocaleDateString(),
+    uniqueId: page.properties.id.unique_id.number,
+    description: page.properties.description?.rich_text?.[0]?.plain_text,
+    raw: page,
+  };
+
   return {
-    page: page as PageObjectResponse,
+    page: issue,
     blocks: blocks.results,
   };
 }

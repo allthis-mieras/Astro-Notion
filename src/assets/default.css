@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  .prose {
+    @apply max-w-none;
+  }
+}
+
+:root {
+ --font-number: 'Protest Revolution', system-ui;
+ --font-headings: 'Space Grotest', system-ui;
+ --font-body: 'Space Grotesk', system-ui;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+.articles {
+    --gap: 0.001rem;
+    --line-offset: calc(var(--gap) / 2);
+    --line-thickness: 1px;
+    --line-color: rgba(100,100,100,0.1);
+
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: hidden;
+    gap: var(--gap);
+    
+}
+
+
+.grid__item {
+    position: relative;
+ 
+}
+
+
+.grid__item::before,
+.grid__item::after {
+    content: "";
+    position: absolute;
+    background-color: var(--line-color);
+    z-index: 1;
+}
+
+
+.grid__item::after {
+    inline-size: 100vw;
+    block-size: var(--line-thickness);
+    inset-inline-start: 0;
+    inset-block-start: calc(var(--line-offset) * -1);
+}
+
+
+.grid__item::before {
+    inline-size: var(--line-thickness);
+    block-size: 100vh;
+    inset-inline-start: calc(var(--line-offset) * -1);
+}

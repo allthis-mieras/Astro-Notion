@@ -1,6 +1,10 @@
 ---
-import Navigation from '../components/Navigation.astro';
-import '../styles/global.css';
+import Navigation from "../components/Navigation.astro";
+import "@fontsource-variable/space-grotesk";
+import "@fontsource/protest-revolution";
+
+import "../assets/scss/globals.scss";
+import "../assets/default.css";
 
 interface Props {
   title: string;
@@ -14,23 +18,29 @@ const { title, description } = Astro.props;
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content={description || "Personal blog powered by Notion and Astro"} />
+    <meta name="description" content={description || "All This & That"} />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+  <body
+    class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+  >
     <Navigation />
-    <main class="max-w-4xl mx-auto px-4 py-8">
+    <main class="">
       <slot />
     </main>
     <script>
       // Check for dark mode preference
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
       } else {
-        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.remove("dark");
       }
     </script>
   </body>
